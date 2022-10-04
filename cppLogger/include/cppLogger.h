@@ -23,6 +23,7 @@ namespace cppLogger {
 		Logger();
 		static LoggerPriority priority;
 		static std::mutex loggerMutex;
+		static FILE* filePtr;
 
 		template<typename... Args>
 		static void printer(LoggerPriority msgPriority, const char* priorityVal, const char* msg, Args... args)
@@ -36,20 +37,50 @@ namespace cppLogger {
 				localtime_s(&timeStamp, &currTime);
 				char timeStampBuffer[100];
 				strftime(timeStampBuffer, 100, "%F %T ", &timeStamp);
-				printf("%s", timeStampBuffer);
+				fprintf(filePtr, "%s", timeStampBuffer);
 
 				std::ostringstream oss;
 				oss << std::this_thread::get_id();
-				printf("[%s] ", oss.str().c_str());
+				fprintf(filePtr, "[");
+				fprintf(filePtr, oss.str().c_str());
+				fprintf(filePtr, "] ");
 				
-				printf(priorityVal);
-				printf(msg, args...);
-				printf("\n");
+				fprintf(filePtr, priorityVal);
+				fprintf(filePtr, msg, args...);
+				fprintf(filePtr, "\n");
 			}
 			
 		}
 
+		~Logger()
+		{	
+			LogClose();
+		}
+
 	public:
+
+		template<typename... Args>
+		static void LogClose()
+		{
+			if (filePtr != 0)
+			{
+				printer(LoggerPriority::Error, "[*] ", "Log Closed.");
+				fclose(filePtr);
+				filePtr = 0;
+			}
+		}
+
+		template<typename... Args>
+		static void LogOpen(const char* filePath)
+		{
+			if (filePtr != 0)
+			{
+				LogClose();
+			}
+
+			fopen_s(&filePtr, filePath, "a");
+			printer(LoggerPriority::Error, "[*] ", "Log Opened.");
+		}
 
 		static void setPriority(LoggerPriority priorityToSet)
 		{
@@ -84,6 +115,7 @@ namespace cppLogger {
 
 	LoggerPriority Logger::priority = LoggerPriority::Info;
 	std::mutex Logger::loggerMutex;
+	FILE* Logger::filePtr = 0;
 }
 
 #endif
