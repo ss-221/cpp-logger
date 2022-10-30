@@ -21,9 +21,9 @@ namespace cppLogger {
 	private:
 
 		Logger();
-		static LoggerPriority priority;
-		static std::mutex loggerMutex;
-		static FILE* filePtr;
+		inline static LoggerPriority priority = LoggerPriority::Info;
+		inline static std::mutex loggerMutex;
+		inline static FILE* filePtr = 0;
 
 		template<typename... Args>
 		static void printer(LoggerPriority msgPriority, const char* priorityVal, const char* msg, Args... args)
@@ -112,10 +112,6 @@ namespace cppLogger {
 		}
 
 	};
-
-	LoggerPriority Logger::priority = LoggerPriority::Info;
-	std::mutex Logger::loggerMutex;
-	FILE* Logger::filePtr = 0;
 }
 
 #endif
