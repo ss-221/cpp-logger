@@ -20,7 +20,7 @@ namespace cppLogger {
 	{
 	private:
 
-		Logger();
+		Logger() = default;
 		inline static LoggerPriority priority = LoggerPriority::Info;
 		inline static std::mutex loggerMutex;
 		inline static FILE* filePtr = 0;
@@ -52,9 +52,15 @@ namespace cppLogger {
 			
 		}
 
+		static Logger& getLoggerInstance()
+		{
+			static Logger instance;
+			return instance;
+		}
+
 		~Logger()
 		{	
-			LogClose();
+			getLoggerInstance().LogClose();
 		}
 
 	public:
@@ -64,7 +70,7 @@ namespace cppLogger {
 		{
 			if (filePtr != 0)
 			{
-				printer(LoggerPriority::Error, "[*] ", "Log Closed.");
+				getLoggerInstance().printer(LoggerPriority::Error, "[*] ", "Log Closed.");
 				fclose(filePtr);
 				filePtr = 0;
 			}
@@ -75,11 +81,11 @@ namespace cppLogger {
 		{
 			if (filePtr != 0)
 			{
-				LogClose();
+				getLoggerInstance().LogClose();
 			}
 
 			fopen_s(&filePtr, filePath, "a");
-			printer(LoggerPriority::Error, "[*] ", "Log Opened.");
+			getLoggerInstance().printer(LoggerPriority::Error, "[*] ", "Log Opened.");
 		}
 
 		static void setPriority(LoggerPriority priorityToSet)
@@ -87,32 +93,30 @@ namespace cppLogger {
 			priority = priorityToSet;
 		}
 
-		static Logger& getLoggerInstance()
-		{
-			static Logger instance;
-			return instance;
-		}
-
 		template<typename... Args>
 		static void ERRORMSG(const char* msg, Args... args)
 		{
-			printer(LoggerPriority::Error, "[ERROR] ", msg, args...);
+			getLoggerInstance().printer(LoggerPriority::Error, "[ERROR] ", msg, args...);
 		}
 
 		template<typename... Args>
 		static void INFOMSG(const char* msg, Args... args)
 		{
-			printer(LoggerPriority::Info, "[INFO] ", msg, args...);
+			getLoggerInstance().printer(LoggerPriority::Info, "[INFO] ", msg, args...);
 		}		
 
 		template<typename... Args>
 		static void DEBUGMSG(const char* msg, Args... args)
 		{
-			printer(LoggerPriority::Debug, "[DEBUG] ", msg, args...);
+			getLoggerInstance().printer(LoggerPriority::Debug, "[DEBUG] ", msg, args...);
 		}
 
 	};
 }
+
+#define ERRORMSG(...) cppLogger::Logger::ERRORMSG(__VA_ARGS__)
+#define INFOMSG(...)  cppLogger::Logger::INFOMSG(__VA_ARGS__)
+#define DEBUGMSG(...) cppLogger::Logger::DEBUGMSG(__VA_ARGS__)
 
 #endif
 
