@@ -1,5 +1,5 @@
 #ifndef CPPLOGGER_H
-#define CPPLOGER_H
+#define CPPLOGGER_H
 
 #include <iostream>
 #include <ctime>
